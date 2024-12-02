@@ -7,7 +7,6 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
 
-
 public class PhysicEngine : MonoBehaviour
 {
     static PhysicEngine instance = null;
@@ -47,16 +46,13 @@ public class PhysicEngine : MonoBehaviour
             float dragCoefficient = 0.98f;
             ObjektA.velocity *= dragCoefficient;
 
-
             Debug.DrawLine(prevPos, newPos, Color.green, 10);
             Debug.DrawLine(ObjektA.transform.position, ObjektA.transform.position + ObjektA.velocity, Color.red);
         }
         foreach (PhysicObject Objekt in Objekts)
         {
             Objekt.GetComponent<Renderer>().material.color = Color.white;
-
         }
-
 
         for (int iA = 0; iA < Objekts.Count; iA++)
         {
@@ -68,43 +64,60 @@ public class PhysicEngine : MonoBehaviour
 
                 if (ObjektA == ObjektB) continue;
 
-
-
                 bool isOverlapping = false;
 
                 if (ObjektA.shape.GetShape() == G11FhysicShape.Shape.Sphere &&
-                   ObjektB.shape.GetShape() == G11FhysicShape.Shape.Sphere)
+                    ObjektB.shape.GetShape() == G11FhysicShape.Shape.Sphere)
                 {
                     isOverlapping = CollideSpheres((FhysicShapeSphere)ObjektA.shape, (FhysicShapeSphere)ObjektB.shape);
-
-
                 }
                 else if (ObjektA.shape.GetShape() == G11FhysicShape.Shape.Sphere &&
                          ObjektB.shape.GetShape() == G11FhysicShape.Shape.Plane)
                 {
                     isOverlapping = IsOverlappingSpheresPlane((FhysicShapeSphere)ObjektA.shape, (FhysicShapePlane)ObjektB.shape);
-
                 }
                 else if (ObjektA.shape.GetShape() == G11FhysicShape.Shape.Plane &&
                          ObjektB.shape.GetShape() == G11FhysicShape.Shape.Sphere)
                 {
-
                     isOverlapping = IsOverlappingSpheresPlane((FhysicShapeSphere)ObjektB.shape, (FhysicShapePlane)ObjektA.shape);
-
                 }
+
                 if (isOverlapping)
                 {
+                    // Momentum Calculation
+                    Vector3 relativeVelocity = ObjektA.velocity - ObjektB.velocity;
+                    float momentumA = ObjektA.mass * relativeVelocity.magnitude;
+                    float momentumB = ObjektB.mass * relativeVelocity.magnitude;
+
+                    // Check if either object is a Pig
+                    Pig pigA = ObjektA.GetComponent<Pig>();
+                    Pig pigB = ObjektB.GetComponent<Pig>();
+
+                    if (pigA != null && !pigA.IsDestroyed)
+                    {
+                        if (momentumA > pigA.Toughness)
+                        {
+                            pigA.DestroyPig();
+                        }
+                    }
+
+                    if (pigB != null && !pigB.IsDestroyed)
+                    {
+                        if (momentumB > pigB.Toughness)
+                        {
+                            pigB.DestroyPig();
+                        }
+                    }
+
+                    // Visualization for debugging
                     Debug.DrawLine(ObjektA.transform.position, ObjektB.transform.position, Color.red);
-
-
                     ObjektA.GetComponent<Renderer>().material.color = Color.red;
                     ObjektB.GetComponent<Renderer>().material.color = Color.red;
-
                 }
             }
         }
-
     }
+
     public static bool CollideSpheres(FhysicShapeSphere sphereA, FhysicShapeSphere sphereB)
     {
         Vector3 displacement = sphereA.transform.position - sphereB.transform.position;
@@ -131,7 +144,6 @@ public class PhysicEngine : MonoBehaviour
         UnityEngine.Vector3 Displacement = ObjekA.transform.position - ObjekB.transform.position;
         float distance = Displacement.magnitude;
 
-
         float radiusA = ((FhysicShapeSphere)ObjekA.shape).radius;
         float radiusB = ((FhysicShapeSphere)ObjekB.shape).radius;
 
@@ -153,6 +165,5 @@ public class PhysicEngine : MonoBehaviour
             return true;
         }
         return false;
-
     }
 }
