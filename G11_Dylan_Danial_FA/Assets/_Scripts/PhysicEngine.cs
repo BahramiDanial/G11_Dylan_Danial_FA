@@ -1,11 +1,8 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Numerics;
 using Unity.VisualScripting;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using Vector3 = UnityEngine.Vector3;
 
 public class PhysicEngine : MonoBehaviour
 {
@@ -28,37 +25,34 @@ public class PhysicEngine : MonoBehaviour
 
     void FixedUpdate()
     {
-        // Update position, velocity, and apply drag
         foreach (PhysicObject ObjektA in Objekts)
         {
             Vector3 prevPos = ObjektA.transform.position;
             Vector3 newPos = ObjektA.transform.position + ObjektA.velocity * dt;
 
-            // Update position if the object is not static
+            // Position update
             if (!ObjektA.isStatic)
             {
                 ObjektA.transform.position = newPos;
             }
 
-            // Update velocity with gravity
+            // Velocity update
             ObjektA.velocity += gravityAcceleration * dt * ObjektA.gravityScale;
 
             // Apply drag
             float dragCoefficient = 0.98f;
             ObjektA.velocity *= dragCoefficient;
 
-            // Debug visualizations for motion
             Debug.DrawLine(prevPos, newPos, Color.green, 10);
             Debug.DrawLine(ObjektA.transform.position, ObjektA.transform.position + ObjektA.velocity, Color.red);
         }
 
-        // Reset colors for all objects
         foreach (PhysicObject Objekt in Objekts)
         {
             Objekt.GetComponent<Renderer>().material.color = Color.white;
         }
 
-        // Handle collisions between objects
+        // Handle collisions
         for (int iA = 0; iA < Objekts.Count; iA++)
         {
             PhysicObject ObjektA = Objekts[iA];
@@ -76,7 +70,6 @@ public class PhysicEngine : MonoBehaviour
                 {
                     isOverlapping = CollideSpheres((FhysicShapeSphere)ObjektA.shape, (FhysicShapeSphere)ObjektB.shape);
                 }
-                // Sphere-Plane collision detection
                 else if (ObjektA.shape.GetShape() == G11FhysicShape.Shape.Sphere &&
                          ObjektB.shape.GetShape() == G11FhysicShape.Shape.Plane)
                 {
@@ -88,14 +81,14 @@ public class PhysicEngine : MonoBehaviour
                     isOverlapping = IsOverlappingSpheresPlane((FhysicShapeSphere)ObjektB.shape, (FhysicShapePlane)ObjektA.shape);
                 }
 
-                if (isOverlapping)
+                if (isOverlapping) // NEW: Momentum and pig damage handling
                 {
-                    // Momentum calculation
+                    // Momentum calculation (NEW)
                     Vector3 relativeVelocity = ObjektA.velocity - ObjektB.velocity;
                     float momentumA = ObjektA.mass * relativeVelocity.magnitude;
                     float momentumB = ObjektB.mass * relativeVelocity.magnitude;
 
-                    // Check if either object is a Pig and handle destruction
+                    // Check if either object is a Pig and handle destruction (NEW)
                     Pig pigA = ObjektA.GetComponent<Pig>();
                     Pig pigB = ObjektB.GetComponent<Pig>();
 
@@ -115,7 +108,7 @@ public class PhysicEngine : MonoBehaviour
                         }
                     }
 
-                    // Visualization for debugging
+                    // Debug visualization for collisions (NEW)
                     Debug.DrawLine(ObjektA.transform.position, ObjektB.transform.position, Color.red);
                     ObjektA.GetComponent<Renderer>().material.color = Color.red;
                     ObjektB.GetComponent<Renderer>().material.color = Color.red;
@@ -124,26 +117,29 @@ public class PhysicEngine : MonoBehaviour
         }
     }
 
+    // Manual Sphere-Sphere collision detection (NEW)
     public static bool CollideSpheres(FhysicShapeSphere sphereA, FhysicShapeSphere sphereB)
     {
         Vector3 displacement = sphereA.transform.position - sphereB.transform.position;
         float distance = displacement.magnitude;
-        float overlap = (sphereA.radius + sphereB.radius) - distance;
+        float combinedRadius = sphereA.radius + sphereB.radius;
 
-        if (overlap > 0.0f)
+        if (distance < combinedRadius) // Overlap condition
         {
-            Vector3 collisionNormal_BtoA = (displacement / distance); // Normalized direction from B to A
-            Vector3 mtv = collisionNormal_BtoA * overlap;
-            sphereA.transform.position += mtv * 0.5f;
-            sphereB.transform.position -= mtv * 0.5f;
-            return true;
+            Vector3 collisionNormal = displacement.normalized;
+            float overlap = combinedRadius - distance;
+
+            // Resolve overlap by adjusting positions
+            sphereA.transform.position += collisionNormal * overlap * 0.5f;
+            sphereB.transform.position -= collisionNormal * overlap * 0.5f;
+
+            return true; // Collision detected
         }
-        else
-        {
-            return false;
-        }
+
+        return false; // No collision
     }
 
+    // Sphere-Plane collision detection
     public bool IsOverlappingSpheresPlane(FhysicShapeSphere sphere, FhysicShapePlane plane)
     {
         Vector3 planeToSphere = sphere.transform.position - plane.transform.position;
@@ -157,6 +153,7 @@ public class PhysicEngine : MonoBehaviour
             sphere.transform.position += plane.Normal() * overlap;
             return true;
         }
+
         return false;
     }
 }
