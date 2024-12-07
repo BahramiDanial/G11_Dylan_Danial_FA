@@ -2,14 +2,13 @@ using UnityEngine;
 
 public class Pig : PhysicObject
 {
-    public float Toughness = 10.0f; // Adjustable toughness value
+    public float Toughness = 1.0f; // Extremely low toughness for testing
     public bool IsDestroyed { get; private set; } = false;
 
     public void DestroyPig()
     {
         IsDestroyed = true;
-        gameObject.SetActive(false); // Optionally deactivate the object
-        Debug.Log("Pig destroyed due to high momentum collision!");
+        Debug.Log($"Pig {name} destroyed!");
+        gameObject.SetActive(false); // Deactivate the pig
     }
 }
-

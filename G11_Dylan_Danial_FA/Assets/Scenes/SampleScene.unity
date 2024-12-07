@@ -525,7 +525,7 @@ MonoBehaviour:
   mass: 1
   gravityScale: 1
   isStatic: 0
-  velocity: {x: 0, y: 0, z: 0}
+  velocity: {x: 10, y: 0, z: 0}
 --- !u!23 &1153176419
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -626,13 +626,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 339137b142fb9b6478fc7b630ecab52d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  shape: {fileID: 1153176417}
-  drag: 0
+  shape: {fileID: 0}
+  drag: 0.1
   mass: 1
   gravityScale: 0
   isStatic: 0
   velocity: {x: 0, y: 0, z: 0}
-  Toughness: 10
+  Toughness: 1
 --- !u!23 &1281552084
 MeshRenderer:
   m_ObjectHideFlags: 0

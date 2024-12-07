@@ -81,17 +81,28 @@ public class PhysicEngine : MonoBehaviour
                     isOverlapping = IsOverlappingSpheresPlane((FhysicShapeSphere)ObjektB.shape, (FhysicShapePlane)ObjektA.shape);
                 }
 
-                if (isOverlapping) // NEW: Momentum and pig damage handling
+                if (isOverlapping)
                 {
-                    // Momentum calculation (NEW)
+                    // Momentum calculation
                     Vector3 relativeVelocity = ObjektA.velocity - ObjektB.velocity;
                     float momentumA = ObjektA.mass * relativeVelocity.magnitude;
                     float momentumB = ObjektB.mass * relativeVelocity.magnitude;
 
-                    // Check if either object is a Pig and handle destruction (NEW)
+                    // Check if either object is a Pig
                     Pig pigA = ObjektA.GetComponent<Pig>();
                     Pig pigB = ObjektB.GetComponent<Pig>();
 
+                    // Debugging momentum and toughness
+                    if (pigA != null)
+                    {
+                        Debug.Log($"Pig A Momentum: {momentumA}, Toughness: {pigA.Toughness}");
+                    }
+                    if (pigB != null)
+                    {
+                        Debug.Log($"Pig B Momentum: {momentumB}, Toughness: {pigB.Toughness}");
+                    }
+
+                    // Handle pig destruction
                     if (pigA != null && !pigA.IsDestroyed)
                     {
                         if (momentumA > pigA.Toughness)
@@ -106,18 +117,19 @@ public class PhysicEngine : MonoBehaviour
                         {
                             pigB.DestroyPig();
                         }
-                    }
 
-                    // Debug visualization for collisions (NEW)
-                    Debug.DrawLine(ObjektA.transform.position, ObjektB.transform.position, Color.red);
-                    ObjektA.GetComponent<Renderer>().material.color = Color.red;
-                    ObjektB.GetComponent<Renderer>().material.color = Color.red;
+                        // Debug visualization for collisions 
+                        Debug.DrawLine(ObjektA.transform.position, ObjektB.transform.position, Color.red);
+                        ObjektA.GetComponent<Renderer>().material.color = Color.red;
+                        ObjektB.GetComponent<Renderer>().material.color = Color.red;
+                    }
                 }
             }
         }
     }
 
-    // Manual Sphere-Sphere collision detection (NEW)
+
+    // Manual Sphere-Sphere collision detection 
     public static bool CollideSpheres(FhysicShapeSphere sphereA, FhysicShapeSphere sphereB)
     {
         Vector3 displacement = sphereA.transform.position - sphereB.transform.position;
