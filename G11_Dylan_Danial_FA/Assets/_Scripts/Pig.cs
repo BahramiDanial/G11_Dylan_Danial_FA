@@ -9,6 +9,6 @@ public class Pig : PhysicObject
     {
         IsDestroyed = true;
         Debug.Log($"Pig {name} destroyed!");
-        gameObject.SetActive(false); // Deactivate the pig
+        Destroy(gameObject);
     }
 }
