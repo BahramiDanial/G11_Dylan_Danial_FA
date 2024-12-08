@@ -24,12 +24,17 @@ public class PhysicEngine : MonoBehaviour
 
     void FixedUpdate()
     {
-        // Update position, velocity, and apply drag
-        foreach (PhysicObject ObjektA in Objekts.ToArray()) // Use a copy to allow removal during iteration
+        foreach (PhysicObject ObjektA in Objekts.ToArray()) 
         {
             if (ObjektA == null)
             {
-                Objekts.Remove(ObjektA); // Remove destroyed objects
+                Objekts.Remove(ObjektA); 
+                continue;
+            }
+
+            // Skip static objects entirely
+            if (ObjektA.isStatic)
+            {
                 continue;
             }
 
@@ -37,10 +42,7 @@ public class PhysicEngine : MonoBehaviour
             Vector3 newPos = ObjektA.transform.position + ObjektA.velocity * dt;
 
             // Position update
-            if (!ObjektA.isStatic)
-            {
-                ObjektA.transform.position = newPos;
-            }
+            ObjektA.transform.position = newPos;
 
             // Velocity update
             ObjektA.velocity += gravityAcceleration * dt * ObjektA.gravityScale;
@@ -48,17 +50,6 @@ public class PhysicEngine : MonoBehaviour
             // Apply drag
             float dragCoefficient = 0.98f;
             ObjektA.velocity *= dragCoefficient;
-
-            Debug.DrawLine(prevPos, newPos, Color.green, 10);
-            Debug.DrawLine(ObjektA.transform.position, ObjektA.transform.position + ObjektA.velocity, Color.red);
-        }
-
-        foreach (PhysicObject Objekt in Objekts.ToArray())
-        {
-            if (Objekt != null)
-            {
-                Objekt.GetComponent<Renderer>().material.color = Color.white;
-            }
         }
 
         // Handle collisions
@@ -70,6 +61,12 @@ public class PhysicEngine : MonoBehaviour
             {
                 PhysicObject ObjektB = Objekts[iB];
                 if (ObjektA == null || ObjektB == null || ObjektA == ObjektB)
+                {
+                    continue;
+                }
+
+                // Skip static objects in collisions
+                if (ObjektA.isStatic && ObjektB.isStatic)
                 {
                     continue;
                 }
@@ -95,8 +92,6 @@ public class PhysicEngine : MonoBehaviour
 
                 if (isOverlapping)
                 {
-                    Debug.DrawLine(ObjektA.transform.position, ObjektB.transform.position, Color.red);
-
                     // Momentum calculation
                     Vector3 relativeVelocity = ObjektA.velocity - ObjektB.velocity;
                     float momentumA = ObjektA.mass * relativeVelocity.magnitude;
@@ -108,7 +103,6 @@ public class PhysicEngine : MonoBehaviour
 
                     if (pigA != null && !pigA.IsDestroyed)
                     {
-                        Debug.Log($"Pig {ObjektA.name} Momentum: {momentumA}, Toughness: {pigA.Toughness}");
                         if (momentumA > pigA.Toughness)
                         {
                             pigA.DestroyPig();
@@ -117,7 +111,6 @@ public class PhysicEngine : MonoBehaviour
 
                     if (pigB != null && !pigB.IsDestroyed)
                     {
-                        Debug.Log($"Pig {ObjektB.name} Momentum: {momentumB}, Toughness: {pigB.Toughness}");
                         if (momentumB > pigB.Toughness)
                         {
                             pigB.DestroyPig();
