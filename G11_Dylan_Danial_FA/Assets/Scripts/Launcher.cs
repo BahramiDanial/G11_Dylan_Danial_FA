@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Luncher : MonoBehaviour
+public class Launcher : MonoBehaviour
 {
     public float angleDegrees = 30;
     public float speed = 100;
