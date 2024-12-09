@@ -9,6 +9,22 @@ public class SlingshotProjectile : MonoBehaviour {
 
     [SerializeField] private GameObject m_slingshotAnchor = null;
     [SerializeField] private float m_maxSlingshotLength;
+    [SerializeField] private float m_slingshotStrength;
+
+    private PhysicObject m_physicsObjectComponent;
+    private FhysicShapeSphere m_sphereShapeComponent;
+    private SlingshotProjectile m_slingshotProjectileComponent;
+
+    private Vector3 m_launchVector = Vector3.zero;
+
+    void Start() {
+        m_physicsObjectComponent = GetComponent<PhysicObject>();
+        m_sphereShapeComponent = GetComponent<FhysicShapeSphere>();
+        m_slingshotProjectileComponent = GetComponent<SlingshotProjectile>();
+
+        m_physicsObjectComponent.enabled = false;
+        m_sphereShapeComponent.enabled = false;
+    }
 
     private bool IsSelfClicked() {
         if (Input.GetMouseButtonDown((int)MouseButton.LeftMouse)) {
@@ -48,18 +64,40 @@ public class SlingshotProjectile : MonoBehaviour {
         Debug.Log("Target world position: " + newWorldPosition);
     }
 
+    private Vector3 CalculateLaunchVector() {
+        Vector3 projectileDisplacement = transform.position - m_slingshotAnchor.transform.position;
+
+        Vector3 launchVector = -(projectileDisplacement * m_slingshotStrength);
+
+        Debug.DrawLine(transform.position, transform.position + launchVector, Color.green);
+
+        return launchVector;
+    }
+
     void Update() {
         if (IsSelfClicked()) {
+            Debug.Log("Object clicked");
+
             if (m_draggable && !m_isBeingDragged) {
                 m_isBeingDragged = true;
             }
         }
         else if (m_isBeingDragged && Input.GetMouseButtonUp((int)MouseButton.LeftMouse)) {
+            Debug.Log("Mouse button released");
+
             m_isBeingDragged = false;
+
+            m_physicsObjectComponent.enabled = true;
+            m_sphereShapeComponent.enabled = true;
+
+            m_physicsObjectComponent.velocity = m_launchVector;
+
+            m_slingshotProjectileComponent.enabled = false;
         }
 
         if (m_isBeingDragged) {
             MoveToMousePosition(true);
+            m_launchVector = CalculateLaunchVector();
         }
     }
 }
